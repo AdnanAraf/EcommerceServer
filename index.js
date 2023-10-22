@@ -34,6 +34,9 @@ async function run() {
     const cartcollection = client.db("ToysMarket").collection("carts");
 
     const Wishlistcollection = client.db("ToysMarket").collection("WishCart");
+    const FeatureProductCollection = client
+      .db("ToysMarket")
+      .collection("FeatureProduct");
 
     app.get("/CategoriesCollection", async (req, res) => {
       const result = await categoriescollection.find().toArray();
@@ -83,13 +86,17 @@ async function run() {
 
     app.get("/getJobsByText/:text", async (req, res) => {
       const text = req.params.text;
-      const result = await ProductCollection.find({
+
+      const result = await Allproductcollection.find({
         $or: [
+          {
+            name: { $regex: text, $options: "i" },
+          },
+
           { title: { $regex: text, $options: "i" } },
-          { Toyname: { $regex: text, $options: "i" } },
-          { price: { $regex: text, $options: "i" } },
         ],
       }).toArray();
+      console.log(result);
       res.send(result);
     });
 
@@ -147,8 +154,25 @@ async function run() {
     app.get("/carts/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await cartcollection.find(query).toArray();
+      const result = await cartcollection.findOne(query);
 
+      res.send(result);
+    });
+
+    // app.get("/FeatureProduct", async (req, res) => {
+    //   const result = await FeatureProductCollection.find().toArray();
+    //   res.send(result);
+    // });
+
+    app.get("/FeatureProduct", async (req, res) => {
+      const result = await FeatureProductCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/FeatureProduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await FeatureProductCollection.findOne(query);
       res.send(result);
     });
 
@@ -201,6 +225,8 @@ async function run() {
       const result = await ProductCollection.updateOne(filter, Toys, options);
       res.send(result);
     });
+
+    ////////////////////////////////// Featured Product/////////////////////////////////////////////////////
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
